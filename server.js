@@ -18,6 +18,7 @@ const { createRateLimiter } = require('./middleware/rateLimit');
 const { authMiddleware } = require('./middleware/auth');
 const logger = require('./utils/logger');
 const { requestLogger } = require('./utils/logger');
+const { initHistory } = require('./utils/queryHistory');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -100,6 +101,9 @@ async function startServer() {
         // Store in app context
         app.set('db', db);
         app.set('dbType', dbType);
+
+        // Initialize persistent history
+        await initHistory(db);
 
         // Start server
         const server = app.listen(PORT, () => {
