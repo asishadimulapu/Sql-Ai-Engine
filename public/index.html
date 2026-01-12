@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Universal SQL AI Engine - Generate SQL queries from natural language">
+  <title>SQL AI Engine | Query Any Database with AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+  <div class="app">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-brand">
+        <span class="logo">⚡</span>
+        <span class="brand-text">SQL AI Engine</span>
+      </div>
+      <div class="nav-links">
+        <button class="nav-btn active" data-view="query">Query</button>
+        <button class="nav-btn" data-view="schema">Schema</button>
+        <button class="nav-btn" data-view="history">History</button>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="uploadBtn" title="Upload CSV/Excel/JSON file">
+        📁 Upload File
+      </button>
+      <div class="nav-status">
+        <span class="status-indicator" id="statusIndicator"></span>
+        <span class="status-text" id="statusText">Connecting...</span>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Query View -->
+      <section class="view active" id="queryView">
+        <div class="query-section">
+          <div class="section-header">
+            <h2>Ask a Question</h2>
+            <p>Describe what data you want in plain English</p>
+          </div>
+
+          <div class="query-input-container">
+            <div class="input-wrapper">
+              <textarea id="questionInput" class="query-input"
+                placeholder="e.g., Show me the top 10 customers by total orders..." rows="3"></textarea>
+              <div class="input-actions">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="explainToggle">
+                  <span>Include explanation</span>
+                </label>
+                <button class="btn btn-primary" id="queryBtn">
+                  <span class="btn-icon">▶</span>
+                  Run Query
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Examples -->
+          <div class="quick-examples">
+            <span class="examples-label">Try:</span>
+            <button class="example-chip" data-query="Show all tables and their row counts">Table counts</button>
+            <button class="example-chip" data-query="List the top 5 products by unit price">Top products</button>
+            <button class="example-chip" data-query="Show customers from Germany">German customers</button>
+            <button class="example-chip" data-query="Total sales by category">Sales by category</button>
+          </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+          <!-- Generated SQL -->
+          <div class="result-card sql-card" id="sqlCard">
+            <div class="card-header">
+              <h3>Generated SQL</h3>
+              <div class="card-actions">
+                <button class="icon-btn" id="copySqlBtn" title="Copy SQL">📋</button>
+                <button class="icon-btn" id="explainSqlBtn" title="Explain Plan">📊</button>
+              </div>
+            </div>
+            <pre class="sql-code"><code id="sqlOutput"></code></pre>
+          </div>
+
+          <!-- Query Stats -->
+          <div class="stats-bar" id="statsBar">
+            <div class="stat">
+              <span class="stat-label">Rows</span>
+              <span class="stat-value" id="rowCount">-</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">AI Time</span>
+              <span class="stat-value" id="genTime">-</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Query Time</span>
+              <span class="stat-value" id="execTime">-</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Total</span>
+              <span class="stat-value" id="totalTime">-</span>
+            </div>
+          </div>
+
+          <!-- Results Table -->
+          <div class="result-card" id="tableCard">
+            <div class="card-header">
+              <h3>Results</h3>
+              <button class="btn btn-secondary btn-sm" id="exportBtn">Export CSV</button>
+            </div>
+            <div class="table-container">
+              <table class="data-table" id="resultsTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AI Explanation -->
+          <div class="result-card explanation-card" id="explanationCard" style="display: none;">
+            <div class="card-header">
+              <h3>AI Explanation</h3>
+            </div>
+            <div class="explanation-content" id="explanationContent"></div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="loading-spinner"></div>
+          <p>Generating SQL...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-banner" id="errorBanner">
+          <span class="error-icon">⚠️</span>
+          <span class="error-message" id="errorMessage"></span>
+          <button class="error-close" id="errorClose">×</button>
+        </div>
+      </section>
+
+      <!-- Schema View -->
+      <section class="view" id="schemaView">
+        <div class="section-header">
+          <h2>Database Schema</h2>
+          <p>Tables and columns available for querying</p>
+        </div>
+        <div class="schema-container" id="schemaContainer">
+          <div class="loading-spinner"></div>
+        </div>
+      </section>
+
+      <!-- History View -->
+      <section class="view" id="historyView">
+        <div class="section-header">
+          <h2>Query History</h2>
+          <div class="header-actions">
+            <button class="btn btn-secondary btn-sm" id="refreshHistoryBtn">Refresh</button>
+            <button class="btn btn-danger btn-sm" id="clearHistoryBtn">Clear All</button>
+          </div>
+        </div>
+
+        <div class="history-stats" id="historyStats"></div>
+
+        <div class="history-list" id="historyList">
+          <div class="loading-spinner"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>📁 Upload Data File</h3>
+          <button class="modal-close" id="uploadModalClose">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📤</div>
+            <p class="upload-text">Drag & drop a file here, or click to browse</p>
+            <p class="upload-hint">Supported: CSV, Excel (.xlsx), JSON (Max 5MB)</p>
+            <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.json" hidden>
+          </div>
+          <div class="upload-progress" id="uploadProgress" style="display: none;">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">Uploading...</p>
+          </div>
+          <div class="uploaded-tables" id="uploadedTables"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+# Nixpacks configuration for Railway deployment
+[phases.setup]
+nixPkgs = ["python3", "gcc", "make"]
+
+[phases.install]
+cmds = ["npm ci --omit=optional"]
+
+[variables]
+DB_TYPE = "postgres"
+NODE_ENV = "production"
+
+[start]
+cmd = "npm run start:prod"

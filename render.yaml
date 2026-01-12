@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: sql-ai-engine
+    runtime: node
+    buildCommand: npm ci --omit=optional
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_TYPE
+        value: postgres
+      - key: GROQ_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+    healthCheckPath: /api/health
