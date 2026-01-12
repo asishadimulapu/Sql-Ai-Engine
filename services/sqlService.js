@@ -5,7 +5,7 @@
 
 const { getSchema, getSimplifiedSchema } = require('../schema/introspect');
 const { buildSQLPrompt } = require('../prompts/sqlPrompt');
-const { generateSQL, explainResults } = require('../ai/groq');
+const { generateSQL: callGroqAI, explainResults: explainWithAI } = require('../ai/groq');
 const { getSchemaFromCache, setSchemaInCache } = require('../utils/cache');
 const { addToHistory } = require('../utils/queryHistory');
 const { executeWithTimeout } = require('../db/connection');
@@ -118,7 +118,7 @@ async function generateSQL(question, db, options = {}) {
         });
 
         // Generate SQL using AI
-        const rawSQL = await generateSQL(question, prompt, {
+        const rawSQL = await callGroqAI(question, prompt, {
             apiKey: options.apiKey,
             model: options.model
         });
@@ -207,7 +207,7 @@ async function queryFromQuestion(question, db, options = {}) {
         let explanation = null;
         if (options.explain && execution.results.length > 0) {
             try {
-                explanation = await explainResults(
+                explanation = await explainWithAI(
                     question,
                     generation.sql,
                     execution.results,
