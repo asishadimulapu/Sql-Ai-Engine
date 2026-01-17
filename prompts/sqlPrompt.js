@@ -1,5 +1,4 @@
 /**
- * Dynamic SQL Prompt Builder
  * Generates AI prompts with injected database schema
  */
 
