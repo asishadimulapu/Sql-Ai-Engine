@@ -1,5 +1,5 @@
 /**
- * Rate Limiting Middleware
+ * Rate Limiting
  */
 
 const rateLimit = require('express-rate-limit');
